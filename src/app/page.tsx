@@ -1,13 +1,11 @@
 "use client";
 
 import ExplodedPanel from "@/components/ExplodedPanel";
-import StoryCanvas from "@/components/StoryCanvas";
 import ElectricityBackground from "@/components/ElectricityBackground";
 import ProjectsSlider from "@/components/ProjectsSlider";
-import { motion, useScroll, useTransform, animate, useMotionValue, useMotionValueEvent } from "framer-motion";
+import { motion, useScroll, useTransform, animate, useMotionValue, useMotionValueEvent, AnimatePresence } from "framer-motion";
 import { Settings, Battery, Zap, Activity, Grid, Sun, Play, ArrowRight } from "lucide-react";
-import { useState, useEffect } from "react";
-import { useProgress } from "@react-three/drei";
+import { useState, useEffect, useRef } from "react";
 import MagneticButton from "@/components/MagneticButton";
 
 import Link from "next/link";
@@ -34,13 +32,20 @@ const services = [
 
 export default function Home() {
   const { scrollY } = useScroll();
-  const { progress } = useProgress();
   
   const heroY = useTransform(scrollY, [0, 800], [0, 300]);
   const heroOpacity = useTransform(scrollY, [0, 600], [1, 0]);
 
   const [bill, setBill] = useState("");
   const [calcResult, setCalcResult] = useState<null | number>(null);
+
+  const [heroVideoIndex, setHeroVideoIndex] = useState(0);
+  const heroVideos = [
+    "/Projects/Hyderabad.mp4",
+    "/Projects/dlf.mp4",
+    "/Projects/neemrana.mp4",
+    "/Projects/raibareli.mp4"
+  ];
 
   const assetProgress = useMotionValue(0);
   const timeProgress = useMotionValue(0);
@@ -49,15 +54,33 @@ export default function Home() {
 
   const [isCanvasActive, setIsCanvasActive] = useState(true);
 
+  const heroVideoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (!isLoading && heroVideoRef.current) {
+      heroVideoRef.current.play();
+    } else if (isLoading && heroVideoRef.current) {
+      heroVideoRef.current.pause();
+    }
+  }, [isLoading, heroVideoIndex]);
+
   useMotionValueEvent(scrollY, "change", (latest) => {
     if (latest > 1200 && isCanvasActive) setIsCanvasActive(false);
     if (latest <= 1200 && !isCanvasActive) setIsCanvasActive(true);
   });
 
-  // 1. Sync actual asset progress smoothly
+  // 1. Sync actual asset progress smoothly (Simulated since 3D canvas is removed)
   useEffect(() => {
-    animate(assetProgress, progress, { duration: 0.5, ease: "easeOut" });
-  }, [progress, assetProgress]);
+    animate(assetProgress, 100, { duration: 2, ease: "easeOut" });
+  }, [assetProgress]);
+
+  // 1.5 Cycle hero videos every 8 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setHeroVideoIndex((prev) => (prev + 1) % heroVideos.length);
+    }, 8000);
+    return () => clearInterval(interval);
+  }, [heroVideos.length]);
 
   // 2. Sync the minimum cinematic timer (always 2.5s)
   useEffect(() => {
@@ -114,15 +137,37 @@ export default function Home() {
   return (
     <div className={isLoading ? "h-screen overflow-hidden fixed inset-0 w-full" : ""}>
       
-      {/* 3D Canvas: Scrolls away naturally after 220vh (Hero + About Us). Pauses GPU when hidden. */}
+      {/* Cinematic Video Background */}
       {/* Hidden initially so the global grid acts as the loading screen background. Fades in after loading finishes. */}
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 2, delay: 2.5, ease: "easeInOut" }}
-        className="absolute top-0 left-0 w-full h-[220vh] pointer-events-none z-0"
+        className="fixed top-0 left-0 w-full h-screen pointer-events-none z-0 overflow-hidden"
       >
-        <StoryCanvas active={isCanvasActive} />
+        <AnimatePresence mode="popLayout">
+          <motion.video 
+            key={heroVideos[heroVideoIndex]}
+            initial={{ opacity: 0, scale: 1.05 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.5, ease: "easeInOut" }}
+            ref={heroVideoRef}
+            autoPlay
+            muted 
+            loop 
+            playsInline
+            src={heroVideos[heroVideoIndex]}
+            style={{ 
+              y: useTransform(scrollY, [0, 1000], [0, 250]),
+              scale: useTransform(scrollY, [0, 1000], [1, 1.15]),
+              opacity: useTransform(scrollY, [500, 1000], [0.6, 0])
+            }}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        </AnimatePresence>
+        {/* Lighter gradient overlay to keep it bright while retaining readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background/10 via-background/30 to-background z-10"></div>
       </motion.div>
 
       <main className="relative z-10 w-full text-white overflow-hidden pb-0 bg-transparent">

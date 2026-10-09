@@ -99,68 +99,39 @@ function SolarFarmDirector() {
   }, []);
 
   useFrame((state) => {
-    const scrollY = window.scrollY;
-    const windowHeight = window.innerHeight;
-    const progress = Math.min(1, Math.max(0, scrollY / (windowHeight * 1.5)));
-
-    // --- MATRIX-STYLE FLY-IN INTRO ---
-    // The loading screen takes ~2.5s. We wait for it to finish before starting the camera fly-in!
-    const introTime = Math.max(0, clock.elapsedTime - 2.5); 
-    const introT = Math.min(1, introTime / 2.5); // 0 to 1 over 2.5 seconds
-    const introEase = 1 - Math.pow(1 - introT, 3); // Cubic ease-out (smooth glide)
+    const time = clock.elapsedTime;
     
-    // Camera starts at x = -40 (crosses fewer panels for a tighter cinematic intro)
-    const currentHeroX = THREE.MathUtils.lerp(-40, 0, introEase);
-
-    // --- CAMERA POSITIONS ---
-    const heroX = currentHeroX;
-    const heroY = 3.0; 
-    const heroZ = 8.0; 
-
-    const farmX = 20;
-    const farmY = 30;
-    const farmZ = 80;
-
-    const targetX = THREE.MathUtils.lerp(heroX, farmX, progress);
-    const targetY = THREE.MathUtils.lerp(heroY, farmY, progress);
-    const targetZ = THREE.MathUtils.lerp(heroZ, farmZ, progress);
-
-    camera.position.x = THREE.MathUtils.lerp(camera.position.x, targetX, 0.05);
-    camera.position.y = THREE.MathUtils.lerp(camera.position.y, targetY, 0.05);
-    camera.position.z = THREE.MathUtils.lerp(camera.position.z, targetZ, 0.05);
-
-    // --- CINEMATIC LOOK TARGET ---
-    const mouseInfluence = Math.max(0, 1 - progress * 4); 
+    // Cinematic slow pan across the solar farm
+    const orbitRadius = 40;
+    const speed = 0.05;
     
-    // Track the camera's ACTUAL position (which lags slightly due to lerping) 
-    // to ensure it NEVER turns its head left/right while flying down the lane!
-    const heroLookX = camera.position.x + (state.mouse.x * 1.5 * mouseInfluence);
-    const heroLookY = 0 + (state.mouse.y * 1.5 * mouseInfluence);
-    const heroLookZ = 0;
+    // The camera constantly glides in a wide, sweeping arc
+    const targetX = Math.sin(time * speed) * orbitRadius;
+    const targetY = 10.0 + Math.sin(time * speed * 0.5) * 5.0; // Gentle vertical drone movement
+    const targetZ = 40 + Math.cos(time * speed) * orbitRadius;
 
-    const farmLookX = 0;
-    const farmLookY = -10;
-    const farmLookZ = -100;
+    camera.position.x = THREE.MathUtils.lerp(camera.position.x, targetX, 0.01);
+    camera.position.y = THREE.MathUtils.lerp(camera.position.y, targetY, 0.01);
+    camera.position.z = THREE.MathUtils.lerp(camera.position.z, targetZ, 0.01);
 
-    const targetLookX = THREE.MathUtils.lerp(heroLookX, farmLookX, progress);
-    const targetLookY = THREE.MathUtils.lerp(heroLookY, farmLookY, progress);
-    const targetLookZ = THREE.MathUtils.lerp(heroLookZ, farmLookZ, progress);
+    // Look down towards the center of the farm, slightly influenced by mouse
+    const lookX = 0 + (state.mouse.x * 10);
+    const lookY = 0 + (state.mouse.y * 5);
+    const lookZ = 0;
 
-    camera.lookAt(targetLookX, targetLookY, targetLookZ);
+    camera.lookAt(lookX, lookY, lookZ);
 
-    // --- MOUSE TILT (No rising animation, keep planted) ---
     if (groupRef.current) {
-      // Plant the panels directly onto the ground so they don't appear to float without stands
       groupRef.current.position.y = -1.9;
-
+      // Subtle mouse tilt on the solar panels themselves
       groupRef.current.rotation.x = THREE.MathUtils.lerp(
         groupRef.current.rotation.x,
-        (state.mouse.y * 0.05 * mouseInfluence),
+        (state.mouse.y * 0.02),
         0.05
       );
       groupRef.current.rotation.y = THREE.MathUtils.lerp(
         groupRef.current.rotation.y,
-        (state.mouse.x * 0.05 * mouseInfluence),
+        (state.mouse.x * 0.02),
         0.05
       );
     }
@@ -231,9 +202,9 @@ function SolarFarmDirector() {
   );
 }
 
-export default function StoryCanvas({ active = true }: { active?: boolean }) {
+export default function StoryCanvas({ active = true, className = "absolute inset-0 w-full h-full pointer-events-none z-0 overflow-hidden" }: { active?: boolean, className?: string }) {
   return (
-    <div className="sticky top-0 h-screen w-full pointer-events-none z-0 overflow-hidden">
+    <div className={className}>
       <Canvas frameloop={active ? "always" : "never"} shadows camera={{ position: [0, 3.0, 8.0], fov: 50 }} dpr={[1, 1.5]}>
         
         <EffectComposer>

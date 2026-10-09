@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useInView } from "framer-motion";
+import { useRef } from "react";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import MagneticButton from "./MagneticButton";
+import StoryCanvas from "./StoryCanvas";
 
 const projectFiles = [
   { src: "/Projects/dlf.mp4", type: "video" },
@@ -15,6 +17,8 @@ const projectFiles = [
 
 export default function ProjectsSlider() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const inView = useInView(sectionRef, { margin: "200px 0px" });
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -24,44 +28,14 @@ export default function ProjectsSlider() {
   }, []);
 
   return (
-    <section className="relative w-full h-[80vh] md:h-[90vh] bg-transparent overflow-hidden flex items-center justify-center border-t border-white/5 pt-20 pb-20">
+    <section ref={sectionRef} className="relative w-full h-[80vh] md:h-[90vh] bg-transparent overflow-hidden flex items-center justify-center border-t border-white/5 pt-20 pb-20">
       
-      {/* Masked Video Container to blend cleanly into the global background */}
+      {/* 3D Story Canvas Background */}
       <div 
-        className="absolute inset-0 z-0" 
-        style={{ maskImage: "linear-gradient(to bottom, transparent, black 20%, black 80%, transparent)", WebkitMaskImage: "linear-gradient(to bottom, transparent, black 20%, black 80%, transparent)" }}
+        className="absolute inset-0 z-0 opacity-80" 
+        style={{ maskImage: "linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)", WebkitMaskImage: "linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)" }}
       >
-        <AnimatePresence mode="popLayout">
-          {projectFiles.map((file, index) => (
-            index === currentIndex && (
-              <motion.div
-                key={file.src}
-                initial={{ opacity: 0, scale: 1.05 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 1.5, ease: "easeInOut" }}
-                className="absolute inset-0 w-full h-full"
-              >
-                {file.type === "video" ? (
-                  <video 
-                    src={file.src} 
-                    autoPlay 
-                    muted 
-                    loop 
-                    playsInline 
-                    className="w-full h-full object-cover opacity-[0.85] mix-blend-screen"
-                  />
-                ) : (
-                  <img 
-                    src={file.src} 
-                    alt="Elev8 Solar Project" 
-                    className="w-full h-full object-cover opacity-[0.85] mix-blend-screen"
-                  />
-                )}
-              </motion.div>
-            )
-          ))}
-        </AnimatePresence>
+        <StoryCanvas active={inView} />
       </div>
 
       <div className="relative z-20 flex flex-col items-center justify-center text-center px-6">
