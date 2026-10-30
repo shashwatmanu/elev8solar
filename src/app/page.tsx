@@ -12,7 +12,7 @@ const ExplodedPanel = dynamic(() => import("@/components/ExplodedPanel"), {
   ssr: false,
   loading: () => <div className="w-full h-full min-h-[420px] md:min-h-[550px]" />
 });
-import { motion, useScroll, useTransform, animate, useMotionValue, useMotionValueEvent, AnimatePresence } from "framer-motion";
+import { motion, useScroll, useTransform, animate, useMotionValue, useMotionValueEvent, AnimatePresence, useInView } from "framer-motion";
 import { Settings, Battery, Zap, Activity, Grid, Sun, Play, ArrowRight } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import MagneticButton from "@/components/MagneticButton";
@@ -54,6 +54,10 @@ export default function Home() {
     "/Projects/raibareli.mp4"
   ];
 
+  // Exploded panel intersection trigger so Three.js doesn't run during hero load
+  const explodedSectionRef = useRef<HTMLDivElement>(null);
+  const isExplodedInView = useInView(explodedSectionRef, { margin: "200px 0px", once: true });
+
   const [isLoading, setIsLoading] = useState(true);
   const heroVideoRef = useRef<HTMLVideoElement>(null);
 
@@ -61,7 +65,7 @@ export default function Home() {
     // Dismiss loading indicator smoothly once client initializes
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 900);
+    }, 700);
     return () => clearTimeout(timer);
   }, []);
 
@@ -71,7 +75,7 @@ export default function Home() {
     }
   }, [heroVideoIndex]);
 
-  // Cycle hero videos every 8 seconds
+  // Only cycle subsequent videos after initial interaction or delay, not clogging bandwidth upfront
   useEffect(() => {
     const interval = setInterval(() => {
       setHeroVideoIndex((prev) => (prev + 1) % heroVideos.length);
@@ -382,8 +386,12 @@ export default function Home() {
           </motion.div>
           
           {/* Centered Massive 3D Model */}
-          <div className="relative z-10 w-full h-[60vh] sm:h-[70vh] md:h-[80vh]">
-            <ExplodedPanel />
+          <div ref={explodedSectionRef} className="relative z-10 w-full h-[60vh] sm:h-[70vh] md:h-[80vh]">
+            {isExplodedInView ? (
+              <ExplodedPanel />
+            ) : (
+              <div className="w-full h-full min-h-[420px] md:min-h-[550px]" />
+            )}
           </div>
 
           {/* Bottom Subtext */}
