@@ -54,6 +54,7 @@ export default function Home() {
     ? ["/Projects/Hyderabad.mp4"] 
     : ["/Projects/Hyderabad.mp4", "/Projects/neemrana.mp4"];
 
+  const [isLoading, setIsLoading] = useState(true);
   const heroVideoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -62,11 +63,39 @@ export default function Home() {
     }
   }, []);
 
+  // When video or client is ready, smoothly release loading screen
   useEffect(() => {
-    if (heroVideoRef.current) {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 700); // 700ms maximum safety ceiling so the user is never stuck
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Strict scroll lock on loading state for both html and body (mobile touch + desktop scroll)
+  useEffect(() => {
+    if (isLoading) {
+      document.documentElement.classList.add("scroll-locked");
+      document.body.classList.add("scroll-locked");
+      const preventTouch = (e: TouchEvent) => {
+        e.preventDefault();
+      };
+      window.addEventListener("touchmove", preventTouch, { passive: false });
+      return () => {
+        document.documentElement.classList.remove("scroll-locked");
+        document.body.classList.remove("scroll-locked");
+        window.removeEventListener("touchmove", preventTouch);
+      };
+    } else {
+      document.documentElement.classList.remove("scroll-locked");
+      document.body.classList.remove("scroll-locked");
+    }
+  }, [isLoading]);
+
+  useEffect(() => {
+    if (heroVideoRef.current && !isLoading) {
       heroVideoRef.current.play().catch(() => {});
     }
-  }, [heroVideoIndex]);
+  }, [isLoading, heroVideoIndex]);
 
   // Only cycle videos on desktop screens, saving mobile bandwidth entirely
   useEffect(() => {
@@ -192,12 +221,31 @@ export default function Home() {
                   </div>
                 </div>
               </motion.h1>
+
+              {/* Prominent Loading text that displays while the page initializes */}
+              <AnimatePresence>
+                {isLoading && (
+                  <motion.div
+                    initial={{ opacity: 1, y: 0 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6, transition: { duration: 0.3 } }}
+                    className="text-accent tracking-[0.35em] font-semibold text-xs sm:text-sm mt-1 sm:mt-2 uppercase flex items-center justify-center gap-2"
+                  >
+                    <motion.span
+                      animate={{ opacity: [0.35, 1, 0.35] }}
+                      transition={{ duration: 1.0, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                      Loading...
+                    </motion.span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Premium Hero Subtitle & CTA - Pinned cleanly at bottom across all screens */}
             <motion.div
               initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              animate={!isLoading ? { opacity: 1 } : { opacity: 0 }}
               transition={{ duration: 0.6 }}
               className="w-full flex flex-col lg:flex-row justify-between items-center lg:items-end gap-4 sm:gap-8 lg:gap-10 text-center lg:text-left pb-3 sm:pb-0"
             >
