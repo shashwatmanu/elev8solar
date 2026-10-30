@@ -23,7 +23,21 @@ export async function POST(req: Request) {
       "Source: elev8solar.co"
     ].filter(Boolean).join("\n\n");
 
-    // Attempt delivery via FormSubmit free email routing (directly delivers formatted HTML/Text to elev8solar.in@gmail.com)
+    // Construct clean payload (only include fields that actually exist)
+    const payload: Record<string, string> = {
+      _subject: subject,
+      _captcha: "false",
+      _template: "table",
+      "Full Name": `${firstName || ""} ${lastName || ""}`.trim() || "Website Visitor",
+      "Email": email || "Not provided",
+      "Phone": phone || "Not provided",
+    };
+
+    if (bill) payload["Monthly Bill"] = `₹${bill}`;
+    if (estimate) payload["Estimated Cost"] = `₹${estimate}`;
+    if (message) payload["Message"] = message;
+
+    // Attempt delivery via FormSubmit free email routing (delivers formatted table to elev8solar.in@gmail.com)
     try {
       await fetch("https://formsubmit.co/ajax/elev8solar.in@gmail.com", {
         method: "POST",
@@ -31,17 +45,7 @@ export async function POST(req: Request) {
           "Content-Type": "application/json",
           "Accept": "application/json"
         },
-        body: JSON.stringify({
-          _subject: subject,
-          _captcha: "false",
-          _template: "table",
-          Name: `${firstName || ""} ${lastName || ""}`.trim(),
-          Email: email || "Not provided",
-          Phone: phone || "Not provided",
-          "Monthly Bill": bill ? `₹${bill}` : "N/A",
-          "Estimated Cost": estimate ? `₹${estimate}` : "N/A",
-          Message: message || "No message entered"
-        })
+        body: JSON.stringify(payload)
       });
     } catch (err) {
       console.warn("External relay failed, fallback logging:", err);
