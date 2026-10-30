@@ -2,7 +2,7 @@
 
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Environment, Text } from "@react-three/drei";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import * as THREE from "three";
 import { useScrollStore } from "@/store"; // We'll just hook this to window scroll
 
@@ -122,9 +122,24 @@ function ExplodedView() {
 }
 
 export default function ExplodedPanel() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   return (
-    <div className="w-full h-full min-h-[500px]">
-      <Canvas camera={{ position: [0, 0, 22], fov: 40 }} dpr={[1, 1.5]}>
+    <div className="w-full h-full min-h-[420px] md:min-h-[550px] relative pointer-events-none">
+      <Canvas 
+        camera={{ position: [0, 0, isMobile ? 30 : 22], fov: isMobile ? 48 : 40 }} 
+        dpr={[1, 1.5]}
+        gl={{ powerPreference: "high-performance", alpha: true }}
+      >
         <ambientLight intensity={1.5} />
         <directionalLight position={[10, 20, 10]} intensity={2} color="#ffffff" />
         <directionalLight position={[-10, -10, -10]} intensity={0.5} color="#0ea5e9" />

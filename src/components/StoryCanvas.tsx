@@ -114,26 +114,14 @@ function SolarFarmDirector() {
     camera.position.y = THREE.MathUtils.lerp(camera.position.y, targetY, 0.01);
     camera.position.z = THREE.MathUtils.lerp(camera.position.z, targetZ, 0.01);
 
-    // Look down towards the center of the farm, slightly influenced by mouse
-    const lookX = 0 + (state.mouse.x * 10);
-    const lookY = 0 + (state.mouse.y * 5);
-    const lookZ = 0;
-
-    camera.lookAt(lookX, lookY, lookZ);
+    // Cinematic fixed center focus without mouse tracking
+    camera.lookAt(0, 0, 0);
 
     if (groupRef.current) {
       groupRef.current.position.y = -1.9;
-      // Subtle mouse tilt on the solar panels themselves
-      groupRef.current.rotation.x = THREE.MathUtils.lerp(
-        groupRef.current.rotation.x,
-        (state.mouse.y * 0.02),
-        0.05
-      );
-      groupRef.current.rotation.y = THREE.MathUtils.lerp(
-        groupRef.current.rotation.y,
-        (state.mouse.x * 0.02),
-        0.05
-      );
+      // Gentle cinematic breathing motion instead of cursor tilt
+      groupRef.current.rotation.x = Math.sin(time * 0.2) * 0.005;
+      groupRef.current.rotation.y = Math.cos(time * 0.15) * 0.005;
     }
   });
 

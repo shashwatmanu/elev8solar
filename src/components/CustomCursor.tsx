@@ -58,10 +58,12 @@ export default function CustomCursor() {
 
   return (
     <>
-      {/* Hide default cursor globally */}
+      {/* Hide default cursor only on hover-capable fine pointer devices */}
       <style>{`
-        body, a, button {
-          cursor: none !important;
+        @media (hover: hover) and (pointer: fine) {
+          body, a, button {
+            cursor: none !important;
+          }
         }
       `}</style>
       
