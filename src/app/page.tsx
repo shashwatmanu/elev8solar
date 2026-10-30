@@ -54,7 +54,7 @@ export default function Home() {
     "/Projects/raibareli.mp4"
   ];
 
-  const [displayCount, setDisplayCount] = useState<number | null>(null);
+  const [displayCount, setDisplayCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
 
   const heroVideoRef = useRef<HTMLVideoElement>(null);
@@ -83,11 +83,10 @@ export default function Home() {
     }
   }, []);
 
-  // Smooth cinematic 0 -> 8 count loader that starts smoothly on client mount
+  // Smooth cinematic 0 -> 8 count loader with clear visible progression
   useEffect(() => {
-    setDisplayCount(0);
     let startTimestamp: number | null = null;
-    const duration = 750; // Snappy 750ms
+    const duration = 1400; // 1.4 seconds gives clear, visible time to read "LOADING..." and watch 0 -> 8
     let rafId: number;
 
     const step = (timestamp: number) => {
@@ -95,7 +94,9 @@ export default function Home() {
       const elapsed = timestamp - startTimestamp;
       const progress = Math.min(1, elapsed / duration);
       
-      const current = Math.min(8, Math.floor(progress * 8.99));
+      // Smooth ease-out so it starts immediately and lands cleanly on 8
+      const ease = 1 - Math.pow(1 - progress, 2.5);
+      const current = Math.min(8, Math.floor(ease * 9));
       setDisplayCount(current);
 
       if (progress < 1) {
@@ -104,7 +105,7 @@ export default function Home() {
         setDisplayCount(8);
         setTimeout(() => {
           setIsLoading(false);
-        }, 120);
+        }, 180);
       }
     };
 
@@ -214,7 +215,7 @@ export default function Home() {
                     
                     {/* ELEV text with pristine gradient mask */}
                     <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/30">
-                      ELEV{displayCount ?? 8}
+                      ELEV{displayCount}
                     </span>
                   </div>
                   <div className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-orange-400 flex items-center justify-center mt-1 sm:mt-2 w-full">
