@@ -83,20 +83,6 @@ export default function Home() {
     }
   }, []);
 
-  // Lock and unlock body scroll cleanly
-  useEffect(() => {
-    if (isLoading) {
-      document.documentElement.style.overflow = "hidden";
-      document.body.style.overflow = "hidden";
-    } else {
-      document.documentElement.style.overflow = "";
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.documentElement.style.overflow = "";
-      document.body.style.overflow = "";
-    };
-  }, [isLoading]);
 
   return (
     <div className="relative w-full">
@@ -107,12 +93,7 @@ export default function Home() {
         <section className="relative w-full h-[100svh] min-h-[600px] flex flex-col items-center justify-between pt-20 sm:pt-28 md:pt-32 pb-8 sm:pb-12 px-4 sm:px-6 overflow-hidden">
           
           {/* Hero Video Background - Scoped exclusively to Hero */}
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: !isLoading ? 1 : 0 }}
-            transition={{ duration: 1.2, ease: "easeInOut" }}
-            className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-hidden"
-          >
+          <div className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-hidden">
             <AnimatePresence mode="sync">
               <motion.video 
                 key={heroVideos[heroVideoIndex]}
@@ -120,18 +101,25 @@ export default function Home() {
                 autoPlay
                 muted 
                 playsInline
-                preload="metadata"
+                disablePictureInPicture
+                controls={false}
+                preload="auto"
                 src={heroVideos[heroVideoIndex]}
+                onLoadedMetadata={(e) => {
+                  const target = e.currentTarget;
+                  target.muted = true;
+                  target.play().catch(() => {});
+                }}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 1.2, ease: "easeInOut" }}
-                className="absolute inset-0 w-full h-full object-cover"
+                className="absolute inset-0 w-full h-full object-cover pointer-events-none"
               />
             </AnimatePresence>
             {/* Soft overlay gradient ensuring readability without masking brightness */}
             <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/50 to-background z-10"></div>
-          </motion.div>
+          </div>
 
           <motion.div 
             style={{ y: heroY, opacity: heroOpacity }}
@@ -211,16 +199,16 @@ export default function Home() {
             {/* Premium Hero Subtitle & CTA - Pinned cleanly at bottom across all screens */}
             <motion.div
               initial={{ opacity: 0 }}
-              animate={!isLoading ? { opacity: 1 } : {}}
-              transition={{ duration: 1, delay: 0.5 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6 }}
               className="w-full flex flex-col lg:flex-row justify-between items-center lg:items-end gap-4 sm:gap-8 lg:gap-10 text-center lg:text-left pb-3 sm:pb-0"
             >
               {/* Subtext: Visible across ALL screens with responsive sizing */}
               <div className="max-w-xl text-center lg:text-left">
                 <motion.div 
                   initial={{ y: 20, opacity: 0 }}
-                  animate={!isLoading ? { y: 0, opacity: 1 } : {}}
-                  transition={{ duration: 0.8, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
                   className="inline-flex items-center gap-3 sm:gap-4 mb-1.5 sm:mb-3"
                 >
                   <div className="w-6 sm:w-12 h-[1px] bg-accent"></div>
@@ -229,8 +217,8 @@ export default function Home() {
                 </motion.div>
                 <motion.p 
                   initial={{ y: 20, opacity: 0 }}
-                  animate={!isLoading ? { y: 0, opacity: 1 } : {}}
-                  transition={{ duration: 0.8, delay: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
                   className="text-white/85 text-xs sm:text-base md:text-lg font-normal leading-relaxed tracking-wide drop-shadow-xl"
                 >
                   <span className="text-white font-bold drop-shadow-2xl">India&apos;s premier EPC partner.</span> Engineering state-of-the-art commercial, utility-scale, and off-grid solar solutions.
@@ -240,8 +228,8 @@ export default function Home() {
               {/* Right Column: CTA Buttons (Pinned cleanly at the bottom on mobile) */}
               <motion.div 
                 initial={{ y: 20, opacity: 0 }}
-                animate={!isLoading ? { y: 0, opacity: 1 } : {}}
-                transition={{ duration: 0.8, delay: 1.0, ease: [0.16, 1, 0.3, 1] }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
                 className="flex flex-row items-center justify-center gap-3 sm:gap-6 w-full lg:w-auto"
               >
                 <MagneticButton>
