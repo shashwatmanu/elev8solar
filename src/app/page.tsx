@@ -54,16 +54,16 @@ export default function Home() {
     "/Projects/raibareli.mp4"
   ];
 
-  const [displayCount, setDisplayCount] = useState(8);
-  const [isLoading, setIsLoading] = useState(false);
+  const [displayCount, setDisplayCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
   const heroVideoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    if (heroVideoRef.current) {
+    if (heroVideoRef.current && !isLoading) {
       heroVideoRef.current.play().catch(() => {});
     }
-  }, [heroVideoIndex]);
+  }, [isLoading, heroVideoIndex]);
 
   // Cycle hero videos every 8 seconds
   useEffect(() => {
@@ -73,7 +73,7 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [heroVideos.length]);
 
-  // Ensure page always starts cleanly at top (prevent mobile browser auto-scroll restoration)
+  // Ensure page always starts cleanly at top
   useEffect(() => {
     if (typeof window !== "undefined") {
       if ("scrollRestoration" in window.history) {
@@ -82,6 +82,50 @@ export default function Home() {
       window.scrollTo(0, 0);
     }
   }, []);
+
+  // Real document ready + rapid progressive 0 -> 8 count loader
+  useEffect(() => {
+    let startTimestamp: number | null = null;
+    const duration = 750; // Snappy 750ms so it completes smoothly and quickly
+    let rafId: number;
+
+    const step = (timestamp: number) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const elapsed = timestamp - startTimestamp;
+      const progress = Math.min(1, elapsed / duration);
+      
+      const current = Math.min(8, Math.floor(progress * 8.99));
+      setDisplayCount(current);
+
+      if (progress < 1) {
+        rafId = requestAnimationFrame(step);
+      } else {
+        setDisplayCount(8);
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 120);
+      }
+    };
+
+    // Trigger loading sequence immediately once mounted
+    rafId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(rafId);
+  }, []);
+
+  // Lock scrolling strictly while the loader is active
+  useEffect(() => {
+    if (isLoading) {
+      document.documentElement.style.overflow = "hidden";
+      document.body.style.overflow = "hidden";
+    } else {
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+    };
+  }, [isLoading]);
 
 
   return (
@@ -194,12 +238,30 @@ export default function Home() {
                 </div>
               </motion.h1>
 
+              {/* Fading Loading text while counter is active */}
+              <AnimatePresence>
+                {isLoading && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -5, transition: { duration: 0.3 } }}
+                    className="text-accent tracking-[0.35em] font-semibold text-xs sm:text-sm mt-1 sm:mt-2 uppercase flex items-center justify-center gap-2"
+                  >
+                    <motion.span
+                      animate={{ opacity: [0.4, 1, 0.4] }}
+                      transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                      Loading...
+                    </motion.span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Premium Hero Subtitle & CTA - Pinned cleanly at bottom across all screens */}
             <motion.div
               initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              animate={!isLoading ? { opacity: 1 } : { opacity: 0 }}
               transition={{ duration: 0.6 }}
               className="w-full flex flex-col lg:flex-row justify-between items-center lg:items-end gap-4 sm:gap-8 lg:gap-10 text-center lg:text-left pb-3 sm:pb-0"
             >
