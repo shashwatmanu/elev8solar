@@ -39,7 +39,7 @@ export default function Navbar() {
             borderColor: isScrolled ? "rgba(255, 255, 255, 0.08)" : "rgba(255, 255, 255, 0)"
           }}
           transition={{ 
-            y: { duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: isHome ? 3.5 : 0.1 },
+            y: { duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 },
             layout: { type: "spring", stiffness: 120, damping: 20 },
             default: { duration: 0.5, ease: [0.32, 0.72, 0, 1] }
           }}

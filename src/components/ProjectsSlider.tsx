@@ -5,7 +5,12 @@ import { useRef } from "react";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import MagneticButton from "./MagneticButton";
-import StoryCanvas from "./StoryCanvas";
+import dynamic from "next/dynamic";
+import { useEffect, useState } from "react";
+
+const StoryCanvas = dynamic(() => import("./StoryCanvas"), {
+  ssr: false,
+});
 
 const projectFiles = [
   { src: "/Projects/dlf.mp4", type: "video" },
@@ -17,19 +22,49 @@ const projectFiles = [
 export default function ProjectsSlider() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const inView = useInView(sectionRef, { margin: "100px 0px" });
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    // Only mount and load Three.js on desktop devices (width >= 1024px and fine pointer)
+    const checkDesktop = () => {
+      const isWide = window.innerWidth >= 1024;
+      const isFinePointer = !window.matchMedia("(pointer: coarse)").matches;
+      setIsDesktop(isWide && isFinePointer);
+    };
+    checkDesktop();
+    window.addEventListener("resize", checkDesktop);
+    return () => window.removeEventListener("resize", checkDesktop);
+  }, []);
 
   return (
     <section ref={sectionRef} className="relative w-full min-h-[75vh] md:min-h-[85vh] bg-transparent overflow-hidden flex items-center justify-center border-t border-white/5 py-24 md:py-32">
-      {/* 3D Story Canvas Background */}
-      <div 
-        className="absolute inset-0 z-0 opacity-90 pointer-events-none" 
-        style={{ 
-          maskImage: "linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)", 
-          WebkitMaskImage: "linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)" 
-        }}
-      >
-        <StoryCanvas active={inView} />
-      </div>
+      {/* 3D Story Canvas Background - Desktop Only for Instant Mobile Speed */}
+      {isDesktop ? (
+        <div 
+          className="absolute inset-0 z-0 opacity-90 pointer-events-none" 
+          style={{ 
+            maskImage: "linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)", 
+            WebkitMaskImage: "linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)" 
+          }}
+        >
+          <StoryCanvas active={inView} />
+        </div>
+      ) : (
+        /* Sleek, lightweight atmospheric solar grid aura on mobile */
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vw] h-[70vh] bg-gradient-to-tr from-accent/15 via-orange-500/10 to-transparent blur-[120px] rounded-full" />
+          <div 
+            className="absolute inset-0 opacity-[0.04]"
+            style={{
+              backgroundImage: `
+                linear-gradient(to right, #f59e0b 1px, transparent 1px),
+                linear-gradient(to bottom, #f59e0b 1px, transparent 1px)
+              `,
+              backgroundSize: '2.5rem 2.5rem'
+            }}
+          />
+        </div>
+      )}
 
       <div className="relative z-20 flex flex-col items-center justify-center text-center px-6 max-w-4xl mx-auto">
         <motion.div

@@ -1,7 +1,7 @@
 "use client";
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Environment, Sky, Stars, Grid } from "@react-three/drei";
+import { Sky, Stars, Grid } from "@react-three/drei";
 import { useRef, useMemo, useEffect } from "react";
 import * as THREE from "three";
 
@@ -192,8 +192,6 @@ export default function StoryCanvas({ active = true, className = "absolute inset
         <directionalLight position={[10, 20, 10]} intensity={0.8} color="#0ea5e9" />
         
         <SolarFarmDirector />
-        
-        <Environment preset="city" />
       </Canvas>
     </div>
   );

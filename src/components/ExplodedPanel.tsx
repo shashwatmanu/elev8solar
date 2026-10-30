@@ -137,8 +137,8 @@ export default function ExplodedPanel() {
     <div className="w-full h-full min-h-[420px] md:min-h-[550px] relative pointer-events-none">
       <Canvas 
         camera={{ position: [0, 0, isMobile ? 30 : 22], fov: isMobile ? 48 : 40 }} 
-        dpr={[1, 1.5]}
-        gl={{ powerPreference: "high-performance", alpha: true }}
+        dpr={isMobile ? 1 : [1, 1.5]}
+        gl={{ powerPreference: "high-performance", alpha: true, antialias: !isMobile }}
       >
         <ambientLight intensity={1.2} />
         {/* Crisp Studio Key, Fill, and Rim Lighting - Instant Zero-Network Load */}
