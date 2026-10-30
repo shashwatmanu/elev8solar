@@ -58,25 +58,14 @@ export default function Home() {
   const [displayCount, setDisplayCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
-  const [isHeroVideoActive, setIsHeroVideoActive] = useState(true);
 
   const heroVideoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    if (!isLoading && heroVideoRef.current && isHeroVideoActive) {
+    if (!isLoading && heroVideoRef.current) {
       heroVideoRef.current.play().catch(() => {});
-    } else if (heroVideoRef.current) {
-      heroVideoRef.current.pause();
     }
-  }, [isLoading, heroVideoIndex, isHeroVideoActive]);
-
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    if (latest > 900 && isHeroVideoActive) {
-      setIsHeroVideoActive(false);
-    } else if (latest <= 900 && !isHeroVideoActive) {
-      setIsHeroVideoActive(true);
-    }
-  });
+  }, [isLoading, heroVideoIndex]);
 
   // Cycle hero videos every 8 seconds
   useEffect(() => {
@@ -134,16 +123,15 @@ export default function Home() {
   }, [isLoading]);
 
   return (
-    <div className={isLoading ? "h-screen overflow-hidden fixed inset-0 w-full" : "relative w-full"}>
+    <div className="relative w-full">
       
       {/* Cinematic Hero Video Background:
-          Remains completely hidden during initial loading (delay: 2.5s).
-          Uses stable persistent video element to prevent mobile flicker/re-render bugs. */}
+          Uses persistent background without mobile layout reflow */}
       <motion.div 
         initial={{ opacity: 0 }}
-        animate={{ opacity: isHeroVideoActive && !isLoading ? 1 : 0 }}
+        animate={{ opacity: !isLoading ? 1 : 0 }}
         transition={{ duration: 1.2, ease: "easeInOut" }}
-        className={`fixed top-0 left-0 w-full h-screen pointer-events-none z-0 overflow-hidden ${isHeroVideoActive ? "block" : "hidden"}`}
+        className="fixed top-0 left-0 w-full h-[100svh] pointer-events-none z-0 overflow-hidden"
       >
         <AnimatePresence mode="sync">
           <motion.video 
