@@ -152,10 +152,19 @@ export default function Navbar() {
               </a>
             </div>
 
-            <div className="border-t border-white/10 pt-6 flex flex-col gap-3">
-              <p className="text-xs uppercase tracking-widest text-white/40">Direct Inquiries</p>
-              <a href="mailto:info@elev8solar.in" className="text-lg text-white font-light">info@elev8solar.in</a>
-              <a href="tel:+919876543210" className="text-lg text-accent font-medium">+91 98765 43210</a>
+            <div className="border-t border-white/10 pt-6 flex flex-col gap-2">
+              <p className="text-xs uppercase tracking-widest text-white/40 mb-1">Direct Inquiries</p>
+              <a href="mailto:elev8solar.in@gmail.com" className="text-base sm:text-lg text-white font-light hover:text-accent transition-colors">
+                elev8solar.in@gmail.com
+              </a>
+              <div className="flex flex-col gap-1 mt-1">
+                <a href="tel:+919560048386" className="text-lg text-accent font-medium hover:text-orange-400 transition-colors">
+                  +91 95600 48386
+                </a>
+                <a href="tel:+918882089996" className="text-lg text-accent font-medium hover:text-orange-400 transition-colors">
+                  +91 88820 89996
+                </a>
+              </div>
             </div>
           </motion.div>
         )}
