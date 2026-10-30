@@ -54,16 +54,13 @@ export default function Home() {
     "/Projects/raibareli.mp4"
   ];
 
-  const [displayCount, setDisplayCount] = useState<number>(0);
-  const [isLoading, setIsLoading] = useState(true);
-
   const heroVideoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    if (heroVideoRef.current && !isLoading) {
+    if (heroVideoRef.current) {
       heroVideoRef.current.play().catch(() => {});
     }
-  }, [isLoading, heroVideoIndex]);
+  }, [heroVideoIndex]);
 
   // Cycle hero videos every 8 seconds
   useEffect(() => {
@@ -82,51 +79,6 @@ export default function Home() {
       window.scrollTo(0, 0);
     }
   }, []);
-
-  // Smooth cinematic 0 -> 8 count loader with clear visible progression
-  useEffect(() => {
-    let startTimestamp: number | null = null;
-    const duration = 1400; // 1.4 seconds gives clear, visible time to read "LOADING..." and watch 0 -> 8
-    let rafId: number;
-
-    const step = (timestamp: number) => {
-      if (!startTimestamp) startTimestamp = timestamp;
-      const elapsed = timestamp - startTimestamp;
-      const progress = Math.min(1, elapsed / duration);
-      
-      // Smooth ease-out so it starts immediately and lands cleanly on 8
-      const ease = 1 - Math.pow(1 - progress, 2.5);
-      const current = Math.min(8, Math.floor(ease * 9));
-      setDisplayCount(current);
-
-      if (progress < 1) {
-        rafId = requestAnimationFrame(step);
-      } else {
-        setDisplayCount(8);
-        setTimeout(() => {
-          setIsLoading(false);
-        }, 180);
-      }
-    };
-
-    rafId = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(rafId);
-  }, []);
-
-  // Lock scrolling strictly while the loader is active
-  useEffect(() => {
-    if (isLoading) {
-      document.documentElement.style.overflow = "hidden";
-      document.body.style.overflow = "hidden";
-    } else {
-      document.documentElement.style.overflow = "";
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.documentElement.style.overflow = "";
-      document.body.style.overflow = "";
-    };
-  }, [isLoading]);
 
 
   return (
@@ -148,7 +100,7 @@ export default function Home() {
                 playsInline
                 disablePictureInPicture
                 controls={false}
-                preload="auto"
+                preload="metadata"
                 src={heroVideos[heroVideoIndex]}
                 onLoadedMetadata={(e) => {
                   const target = e.currentTarget;
@@ -175,7 +127,7 @@ export default function Home() {
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 1, ease: "easeOut", delay: 1 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
                 className="px-4 sm:px-6 py-1.5 sm:py-2 rounded-full border border-accent/30 bg-accent/10 backdrop-blur-md mb-4 sm:mb-8 text-accent font-semibold tracking-widest uppercase text-[11px] sm:text-xs md:text-sm"
               >
                 Pioneering the Future
@@ -189,19 +141,14 @@ export default function Home() {
                     {/* Cinematic Logo Reveal: pure transparent natural PNG without artificial glow or blur */}
                     <motion.div
                       initial={{ width: 0, opacity: 0, scale: 0.8, marginRight: 0 }}
-                      animate={(displayCount === null || displayCount >= 8) ? {
+                      animate={{
                         width: "auto",
                         opacity: 1,
                         scale: 1,
                         marginRight: "clamp(0.6rem, 2vw, 1.8rem)"
-                      } : {
-                        width: 0,
-                        opacity: 0,
-                        scale: 0.8,
-                        marginRight: 0
                       }}
                       transition={{
-                        duration: 0.9,
+                        duration: 0.6,
                         ease: [0.16, 1, 0.3, 1]
                       }}
                       className="overflow-hidden inline-flex items-center justify-center shrink-0"
@@ -215,7 +162,7 @@ export default function Home() {
                     
                     {/* ELEV text with pristine gradient mask */}
                     <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/30">
-                      ELEV{displayCount}
+                      ELEV8
                     </span>
                   </div>
                   <div className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-orange-400 flex items-center justify-center mt-1 sm:mt-2 w-full">
@@ -238,31 +185,12 @@ export default function Home() {
                   </div>
                 </div>
               </motion.h1>
-
-              {/* Fading Loading text while counter is active */}
-              <AnimatePresence>
-                {isLoading && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -5, transition: { duration: 0.3 } }}
-                    className="text-accent tracking-[0.35em] font-semibold text-xs sm:text-sm mt-1 sm:mt-2 uppercase flex items-center justify-center gap-2"
-                  >
-                    <motion.span
-                      animate={{ opacity: [0.4, 1, 0.4] }}
-                      transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
-                    >
-                      Loading...
-                    </motion.span>
-                  </motion.div>
-                )}
-              </AnimatePresence>
             </div>
 
             {/* Premium Hero Subtitle & CTA - Pinned cleanly at bottom across all screens */}
             <motion.div
               initial={{ opacity: 0 }}
-              animate={!isLoading ? { opacity: 1 } : { opacity: 0 }}
+              animate={{ opacity: 1 }}
               transition={{ duration: 0.6 }}
               className="w-full flex flex-col lg:flex-row justify-between items-center lg:items-end gap-4 sm:gap-8 lg:gap-10 text-center lg:text-left pb-3 sm:pb-0"
             >
