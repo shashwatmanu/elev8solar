@@ -54,17 +54,16 @@ export default function Home() {
     "/Projects/raibareli.mp4"
   ];
 
-  const [displayCount, setDisplayCount] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-
+  const [displayCount, setDisplayCount] = useState(8);
+  const [isLoading, setIsLoading] = useState(false);
 
   const heroVideoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    if (!isLoading && heroVideoRef.current) {
+    if (heroVideoRef.current) {
       heroVideoRef.current.play().catch(() => {});
     }
-  }, [isLoading, heroVideoIndex]);
+  }, [heroVideoIndex]);
 
   // Cycle hero videos every 8 seconds
   useEffect(() => {
@@ -73,37 +72,6 @@ export default function Home() {
     }, 8000);
     return () => clearInterval(interval);
   }, [heroVideos.length]);
-
-  // Ultra-snappy 0 -> 8 count animation (850ms duration)
-  // Ensures fast, cinematic sweep through numbers immediately on load without lingering on 0
-  useEffect(() => {
-    let startTime: number | null = null;
-    const duration = 850; // Snappy 850ms so mobile visitors never see it pause or stall
-    let rafId: number;
-
-    const step = (timestamp: number) => {
-      if (!startTime) startTime = timestamp;
-      const elapsed = timestamp - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-
-      // Smooth ease-out
-      const ease = 1 - Math.pow(1 - progress, 2.5);
-      const currentNumber = Math.min(Math.floor(ease * 9), 8);
-      setDisplayCount(currentNumber);
-
-      if (progress < 1) {
-        rafId = requestAnimationFrame(step);
-      } else {
-        setDisplayCount(8);
-        setTimeout(() => {
-          setIsLoading(false);
-        }, 150);
-      }
-    };
-
-    rafId = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(rafId);
-  }, []);
 
   // Ensure page always starts cleanly at top (prevent mobile browser auto-scroll restoration)
   useEffect(() => {
@@ -238,20 +206,6 @@ export default function Home() {
                 </div>
               </motion.h1>
 
-              {/* Fading Sub-loader text */}
-              <motion.div
-                initial={{ opacity: 1, scale: 1 }}
-                animate={!isLoading ? { opacity: 0, scale: 0.8, height: 0, margin: 0, pointerEvents: "none" } : { opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4, ease: "easeInOut" }}
-                className="text-accent tracking-[0.3em] font-bold text-xs sm:text-sm mb-2 uppercase"
-              >
-                <motion.span
-                  animate={{ opacity: [0.4, 1, 0.4] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                >
-                  Loading...
-                </motion.span>
-              </motion.div>
             </div>
 
             {/* Premium Hero Subtitle & CTA - Pinned cleanly at bottom across all screens */}
