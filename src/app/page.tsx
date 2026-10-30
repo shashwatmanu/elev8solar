@@ -2,7 +2,11 @@
 
 import dynamic from "next/dynamic";
 import ElectricityBackground from "@/components/ElectricityBackground";
-import ProjectsSlider from "@/components/ProjectsSlider";
+
+const ProjectsSlider = dynamic(() => import("@/components/ProjectsSlider"), {
+  ssr: false,
+  loading: () => <div className="w-full min-h-[75vh]" />
+});
 
 const ExplodedPanel = dynamic(() => import("@/components/ExplodedPanel"), {
   ssr: false,
@@ -138,7 +142,7 @@ export default function Home() {
                 autoPlay
                 muted 
                 playsInline
-                preload="auto"
+                preload="metadata"
                 src={heroVideos[heroVideoIndex]}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
