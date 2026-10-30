@@ -47,21 +47,24 @@ export default function Home() {
   const [calcResult, setCalcResult] = useState<null | number>(null);
 
   const [heroVideoIndex, setHeroVideoIndex] = useState(0);
-  const heroVideos = [
-    "/Projects/Hyderabad.mp4",
-    "/Projects/dlf.mp4",
-    "/Projects/neemrana.mp4",
-    "/Projects/raibareli.mp4"
-  ];
+  const [isMobileDevice, setIsMobileDevice] = useState(false);
+  
+  // Hyderabad (2.5MB) is our most optimized, high-fidelity hero video
+  const heroVideos = isMobileDevice 
+    ? ["/Projects/Hyderabad.mp4"] 
+    : ["/Projects/Hyderabad.mp4", "/Projects/neemrana.mp4"];
 
   const [isLoading, setIsLoading] = useState(true);
   const heroVideoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsMobileDevice(window.innerWidth < 768 || window.matchMedia("(pointer: coarse)").matches);
+    }
     // Dismiss loading indicator smoothly once client initializes
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 700);
+    }, 500);
     return () => clearTimeout(timer);
   }, []);
 
@@ -71,13 +74,14 @@ export default function Home() {
     }
   }, [heroVideoIndex]);
 
-  // Only cycle subsequent videos after initial interaction or delay, not clogging bandwidth upfront
+  // Only cycle videos on desktop screens, saving mobile bandwidth entirely
   useEffect(() => {
+    if (isMobileDevice || heroVideos.length <= 1) return;
     const interval = setInterval(() => {
       setHeroVideoIndex((prev) => (prev + 1) % heroVideos.length);
-    }, 8000);
+    }, 10000);
     return () => clearInterval(interval);
-  }, [heroVideos.length]);
+  }, [isMobileDevice, heroVideos.length]);
 
   // Ensure page always starts cleanly at top
   useEffect(() => {

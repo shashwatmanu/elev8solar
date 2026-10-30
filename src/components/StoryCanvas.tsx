@@ -9,7 +9,6 @@ function SolarFarmDirector() {
   const frameRef = useRef<THREE.InstancedMesh>(null);
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const thickGridRef = useRef<THREE.InstancedMesh>(null);
-  const thinGridRef = useRef<THREE.InstancedMesh>(null);
   const groupRef = useRef<THREE.Group>(null);
   const groundRef = useRef<THREE.Mesh>(null);
   
@@ -17,17 +16,17 @@ function SolarFarmDirector() {
   const dummyGrid = useMemo(() => new THREE.Object3D(), []);
   const { camera, clock } = useThree();
   
-  const rows = 20;
-  const cols = 50; 
-  const count = rows * cols; // 1000 panels
+  const rows = 12;
+  const cols = 20; 
+  const count = rows * cols; // 240 panels: 75% reduction in GPU draw calls & memory
   
   useEffect(() => {
-    if (meshRef.current && frameRef.current && thickGridRef.current && thinGridRef.current) {
+    if (meshRef.current && frameRef.current && thickGridRef.current) {
       let i = 0;
       for (let r = -rows/2; r < rows/2; r++) {
         for (let c = -cols/2; c < cols/2; c++) {
-          const x = c * 6.7; 
-          const z = r * 15;
+          const x = c * 7.0; 
+          const z = r * 16.0;
           
           dummy.position.set(x, 2.0, z);
           dummy.rotation.set(0, 0, 0); 
@@ -44,7 +43,6 @@ function SolarFarmDirector() {
           dummyGrid.updateMatrix();
           
           thickGridRef.current.setMatrixAt(i, dummyGrid.matrix);
-          thinGridRef.current.setMatrixAt(i, dummyGrid.matrix);
           
           i++;
         }
@@ -52,7 +50,6 @@ function SolarFarmDirector() {
       meshRef.current.instanceMatrix.needsUpdate = true;
       frameRef.current.instanceMatrix.needsUpdate = true;
       thickGridRef.current.instanceMatrix.needsUpdate = true;
-      thinGridRef.current.instanceMatrix.needsUpdate = true;
     }
   }, [dummy, dummyGrid]);
 
@@ -146,30 +143,16 @@ function SolarFarmDirector() {
         />
       </instancedMesh>
       
-      {/* 3. Clean Primary Busbars */}
+      {/* 3. Clean Modern Busbars */}
       <instancedMesh ref={thickGridRef} args={[undefined, undefined, count]} position={[0, 0, 0]}>
-        <planeGeometry args={[5.8, 7.8, 6, 8]} />
+        <planeGeometry args={[5.8, 7.8, 12, 16]} />
         <meshStandardMaterial 
           color="#000000" 
           emissive="#cbd5e1" 
-          emissiveIntensity={2} 
+          emissiveIntensity={1.5} 
           wireframe 
           transparent 
-          opacity={0.6} 
-          depthWrite={false}
-        />
-      </instancedMesh>
-
-      {/* 4. Internal Micro-wires (Fingers) */}
-      <instancedMesh ref={thinGridRef} args={[undefined, undefined, count]} position={[0, 0, 0]}>
-        <planeGeometry args={[5.8, 7.8, 24, 32]} />
-        <meshStandardMaterial 
-          color="#000000" 
-          emissive="#64748b" 
-          emissiveIntensity={1} 
-          wireframe 
-          transparent 
-          opacity={0.2} 
+          opacity={0.4} 
           depthWrite={false}
         />
       </instancedMesh>
