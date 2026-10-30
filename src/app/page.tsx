@@ -1,8 +1,13 @@
 "use client";
 
-import ExplodedPanel from "@/components/ExplodedPanel";
+import dynamic from "next/dynamic";
 import ElectricityBackground from "@/components/ElectricityBackground";
 import ProjectsSlider from "@/components/ProjectsSlider";
+
+const ExplodedPanel = dynamic(() => import("@/components/ExplodedPanel"), {
+  ssr: false,
+  loading: () => <div className="w-full h-full min-h-[420px] md:min-h-[550px]" />
+});
 import { motion, useScroll, useTransform, animate, useMotionValue, useMotionValueEvent, AnimatePresence } from "framer-motion";
 import { Settings, Battery, Zap, Activity, Grid, Sun, Play, ArrowRight } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
@@ -50,8 +55,6 @@ export default function Home() {
     "/Projects/raibareli.mp4"
   ];
 
-  const assetProgress = useMotionValue(0);
-  const timeProgress = useMotionValue(0);
   const [displayCount, setDisplayCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -75,12 +78,7 @@ export default function Home() {
     }
   });
 
-  // 1. Sync actual asset progress smoothly
-  useEffect(() => {
-    animate(assetProgress, 100, { duration: 2, ease: "easeOut" });
-  }, [assetProgress]);
-
-  // 1.5 Cycle hero videos every 8 seconds
+  // Cycle hero videos every 8 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       setHeroVideoIndex((prev) => (prev + 1) % heroVideos.length);
@@ -88,38 +86,39 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [heroVideos.length]);
 
-  // 2. Sync the minimum cinematic timer (always 2.5s)
+  // Rock-solid smooth 0 -> 8 count animation (1.8s duration)
+  // Uses direct timestamp delta so mobile backgrounding or JS hiccups never cause jumps or freezes
   useEffect(() => {
-    animate(timeProgress, 100, { duration: 2.5, ease: "linear" });
-  }, [timeProgress]);
+    let startTime: number | null = null;
+    const duration = 1800; // 1.8 seconds total for optimal cinematic pacing without stalling visitors
+    let rafId: number;
 
-  // 3. Continuously compute the minimum of both values to drive the counter safely
-  useEffect(() => {
-    if (!isLoading) return;
-    
-    let animationFrameId: number;
-    const updateCount = () => {
-      const p1 = assetProgress.get();
-      const p2 = timeProgress.get();
-      const effectiveProgress = Math.min(p1, p2);
-      
-      setDisplayCount((prev) => {
-        const next = Math.round((effectiveProgress / 100) * 8);
-        return prev !== next ? next : prev;
-      });
+    const step = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const elapsed = timestamp - startTime;
+      const progress = Math.min(elapsed / duration, 1);
 
-      if (effectiveProgress >= 99.9) {
-        setIsLoading(false);
+      // Smooth easing (ease-out cubic)
+      const ease = 1 - Math.pow(1 - progress, 3);
+      const currentNumber = Math.min(Math.floor(ease * 9), 8);
+      setDisplayCount(currentNumber);
+
+      if (progress < 1) {
+        rafId = requestAnimationFrame(step);
       } else {
-        animationFrameId = requestAnimationFrame(updateCount);
+        setDisplayCount(8);
+        // Small graceful pause on '8' before unlocking the page seamlessly
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 250);
       }
     };
-    
-    animationFrameId = requestAnimationFrame(updateCount);
-    return () => cancelAnimationFrame(animationFrameId);
-  }, [isLoading, assetProgress, timeProgress]);
 
-  // 4. Lock and unlock body scroll cleanly
+    rafId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(rafId);
+  }, []);
+
+  // Lock and unlock body scroll cleanly
   useEffect(() => {
     if (isLoading) {
       document.documentElement.style.overflow = "hidden";
@@ -143,7 +142,7 @@ export default function Home() {
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: isHeroVideoActive && !isLoading ? 1 : 0 }}
-        transition={{ duration: 1.5, delay: isLoading ? 2.5 : 0, ease: "easeInOut" }}
+        transition={{ duration: 1.2, ease: "easeInOut" }}
         className={`fixed top-0 left-0 w-full h-screen pointer-events-none z-0 overflow-hidden ${isHeroVideoActive ? "block" : "hidden"}`}
       >
         <motion.video 
@@ -246,8 +245,8 @@ export default function Home() {
               {/* Fading Sub-loader text */}
               <motion.div
                 initial={{ opacity: 1, scale: 1 }}
-                animate={{ opacity: 0, scale: 0, height: 0, margin: 0, pointerEvents: "none" }}
-                transition={{ duration: 0.4, delay: 2.5, ease: "easeInOut" }}
+                animate={!isLoading ? { opacity: 0, scale: 0.8, height: 0, margin: 0, pointerEvents: "none" } : { opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4, ease: "easeInOut" }}
                 className="text-accent tracking-[0.3em] font-bold text-xs sm:text-sm mb-2 uppercase"
               >
                 <motion.span
