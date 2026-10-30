@@ -54,7 +54,7 @@ export default function Home() {
     "/Projects/raibareli.mp4"
   ];
 
-  const [displayCount, setDisplayCount] = useState(0);
+  const [displayCount, setDisplayCount] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const heroVideoRef = useRef<HTMLVideoElement>(null);
@@ -83,10 +83,11 @@ export default function Home() {
     }
   }, []);
 
-  // Real document ready + rapid progressive 0 -> 8 count loader
+  // Smooth cinematic 0 -> 8 count loader that starts smoothly on client mount
   useEffect(() => {
+    setDisplayCount(0);
     let startTimestamp: number | null = null;
-    const duration = 750; // Snappy 750ms so it completes smoothly and quickly
+    const duration = 750; // Snappy 750ms
     let rafId: number;
 
     const step = (timestamp: number) => {
@@ -107,7 +108,6 @@ export default function Home() {
       }
     };
 
-    // Trigger loading sequence immediately once mounted
     rafId = requestAnimationFrame(step);
     return () => cancelAnimationFrame(rafId);
   }, []);
@@ -188,7 +188,7 @@ export default function Home() {
                     {/* Cinematic Logo Reveal: pure transparent natural PNG without artificial glow or blur */}
                     <motion.div
                       initial={{ width: 0, opacity: 0, scale: 0.8, marginRight: 0 }}
-                      animate={displayCount >= 8 ? {
+                      animate={(displayCount === null || displayCount >= 8) ? {
                         width: "auto",
                         opacity: 1,
                         scale: 1,
@@ -214,7 +214,7 @@ export default function Home() {
                     
                     {/* ELEV text with pristine gradient mask */}
                     <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/30">
-                      ELEV{displayCount}
+                      ELEV{displayCount ?? 8}
                     </span>
                   </div>
                   <div className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-orange-400 flex items-center justify-center mt-1 sm:mt-2 w-full">
