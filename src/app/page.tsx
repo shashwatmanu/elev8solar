@@ -70,11 +70,11 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [heroVideos.length]);
 
-  // Rock-solid smooth 0 -> 8 count animation (1.8s duration)
-  // Uses direct timestamp delta so mobile backgrounding or JS hiccups never cause jumps or freezes
+  // Ultra-snappy 0 -> 8 count animation (850ms duration)
+  // Ensures fast, cinematic sweep through numbers immediately on load without lingering on 0
   useEffect(() => {
     let startTime: number | null = null;
-    const duration = 1800; // 1.8 seconds total for optimal cinematic pacing without stalling visitors
+    const duration = 850; // Snappy 850ms so mobile visitors never see it pause or stall
     let rafId: number;
 
     const step = (timestamp: number) => {
@@ -82,8 +82,8 @@ export default function Home() {
       const elapsed = timestamp - startTime;
       const progress = Math.min(elapsed / duration, 1);
 
-      // Smooth easing (ease-out cubic)
-      const ease = 1 - Math.pow(1 - progress, 3);
+      // Smooth ease-out
+      const ease = 1 - Math.pow(1 - progress, 2.5);
       const currentNumber = Math.min(Math.floor(ease * 9), 8);
       setDisplayCount(currentNumber);
 
@@ -91,10 +91,9 @@ export default function Home() {
         rafId = requestAnimationFrame(step);
       } else {
         setDisplayCount(8);
-        // Small graceful pause on '8' before unlocking the page seamlessly
         setTimeout(() => {
           setIsLoading(false);
-        }, 250);
+        }, 150);
       }
     };
 
