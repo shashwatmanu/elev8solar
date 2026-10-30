@@ -105,6 +105,16 @@ export default function Home() {
     return () => cancelAnimationFrame(rafId);
   }, []);
 
+  // Ensure page always starts cleanly at top (prevent mobile browser auto-scroll restoration)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if ("scrollRestoration" in window.history) {
+        window.history.scrollRestoration = "manual";
+      }
+      window.scrollTo(0, 0);
+    }
+  }, []);
+
   // Lock and unlock body scroll cleanly
   useEffect(() => {
     if (isLoading) {

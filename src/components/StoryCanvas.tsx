@@ -1,8 +1,7 @@
 "use client";
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Environment, Sky, Stars, Grid, useTexture } from "@react-three/drei";
-import { EffectComposer, Bloom } from "@react-three/postprocessing";
+import { Environment, Sky, Stars, Grid } from "@react-three/drei";
 import { useRef, useMemo, useEffect } from "react";
 import * as THREE from "three";
 
@@ -17,17 +16,6 @@ function SolarFarmDirector() {
   const dummy = useMemo(() => new THREE.Object3D(), []);
   const dummyGrid = useMemo(() => new THREE.Object3D(), []);
   const { camera, clock } = useThree();
-
-  // High-res photographic texture for true realism
-  const groundMap = useTexture('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/terrain/grasslight-big.jpg');
-  
-  useMemo(() => {
-    if (groundMap) {
-      groundMap.wrapS = groundMap.wrapT = THREE.RepeatWrapping;
-      groundMap.repeat.set(4000, 4000); // Tile densely so grass blades look appropriately small
-      groundMap.colorSpace = THREE.SRGBColorSpace;
-    }
-  }, [groundMap]);
   
   const rows = 20;
   const cols = 50; 
@@ -127,14 +115,13 @@ function SolarFarmDirector() {
 
   return (
     <group ref={groupRef} position={[0, -1, 0]}>
-      {/* Physical Earth Ground (receives shadows, highly segmented for physical hills) */}
+      {/* Physical Earth Ground */}
       <mesh ref={groundRef} position={[0, -2.1, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <planeGeometry args={[20000, 20000, 150, 150]} />
+        <planeGeometry args={[20000, 20000, 60, 60]} />
         <meshStandardMaterial 
-          color="#ffffff" 
-          roughness={1} 
-          metalness={0} 
-          map={groundMap}
+          color="#152018" 
+          roughness={0.9} 
+          metalness={0.1} 
         />
       </mesh>
 
@@ -193,12 +180,12 @@ function SolarFarmDirector() {
 export default function StoryCanvas({ active = true, className = "absolute inset-0 w-full h-full pointer-events-none z-0 overflow-hidden" }: { active?: boolean, className?: string }) {
   return (
     <div className={className}>
-      <Canvas frameloop={active ? "always" : "never"} shadows camera={{ position: [0, 3.0, 8.0], fov: 50 }} dpr={[1, 1.5]}>
-        
-        <EffectComposer>
-          <Bloom luminanceThreshold={1.2} mipmapBlur intensity={1.0} />
-        </EffectComposer>
-
+      <Canvas 
+        frameloop={active ? "always" : "never"} 
+        camera={{ position: [0, 3.0, 8.0], fov: 50 }} 
+        dpr={[1, 1.5]}
+        gl={{ powerPreference: "high-performance", alpha: true }}
+      >
         {/* The Beautiful Procedural Sky */}
         <Sky 
           distance={450000} 
@@ -210,22 +197,16 @@ export default function StoryCanvas({ active = true, className = "absolute inset
           mieCoefficient={0.005} 
         />
         
-        <ambientLight intensity={0.1} />
+        <ambientLight intensity={0.5} />
 
-        
-        {/* Massive shadow-casting sun */}
+        {/* Sunlight */}
         <directionalLight 
           position={[-50, 20, -50]} 
-          intensity={4} 
+          intensity={3} 
           color="#f97316" 
-          castShadow 
-          shadow-mapSize={[2048, 2048]}
-          shadow-bias={-0.0001}
-        >
-          <orthographicCamera attach="shadow-camera" args={[-150, 150, 150, -150, 0.1, 500]} />
-        </directionalLight>
+        />
         
-        <directionalLight position={[10, 20, 10]} intensity={0.5} color="#0ea5e9" />
+        <directionalLight position={[10, 20, 10]} intensity={0.8} color="#0ea5e9" />
         
         <SolarFarmDirector />
         
