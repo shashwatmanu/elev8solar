@@ -54,10 +54,6 @@ export default function Home() {
     "/Projects/raibareli.mp4"
   ];
 
-  // Exploded panel intersection trigger so Three.js doesn't run during hero load
-  const explodedSectionRef = useRef<HTMLDivElement>(null);
-  const isExplodedInView = useInView(explodedSectionRef, { margin: "200px 0px", once: true });
-
   const [isLoading, setIsLoading] = useState(true);
   const heroVideoRef = useRef<HTMLVideoElement>(null);
 
@@ -386,12 +382,8 @@ export default function Home() {
           </motion.div>
           
           {/* Centered Massive 3D Model */}
-          <div ref={explodedSectionRef} className="relative z-10 w-full h-[60vh] sm:h-[70vh] md:h-[80vh]">
-            {isExplodedInView ? (
-              <ExplodedPanel />
-            ) : (
-              <div className="w-full h-full min-h-[420px] md:min-h-[550px]" />
-            )}
+          <div className="relative z-10 w-full h-[60vh] sm:h-[70vh] md:h-[80vh]">
+            <ExplodedPanel />
           </div>
 
           {/* Bottom Subtext */}

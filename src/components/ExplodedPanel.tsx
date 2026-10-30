@@ -140,11 +140,12 @@ export default function ExplodedPanel() {
         dpr={[1, 1.5]}
         gl={{ powerPreference: "high-performance", alpha: true }}
       >
-        <ambientLight intensity={1.5} />
-        <directionalLight position={[10, 20, 10]} intensity={2} color="#ffffff" />
-        <directionalLight position={[-10, -10, -10]} intensity={0.5} color="#0ea5e9" />
+        <ambientLight intensity={1.2} />
+        {/* Crisp Studio Key, Fill, and Rim Lighting - Instant Zero-Network Load */}
+        <directionalLight position={[15, 25, 15]} intensity={2.5} color="#ffffff" />
+        <directionalLight position={[-15, -10, 10]} intensity={1.2} color="#38bdf8" />
+        <directionalLight position={[0, -20, -15]} intensity={0.8} color="#fbbf24" />
         <ExplodedView />
-        <Environment preset="city" />
       </Canvas>
     </div>
   );
