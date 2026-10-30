@@ -145,21 +145,26 @@ export default function Home() {
         transition={{ duration: 1.2, ease: "easeInOut" }}
         className={`fixed top-0 left-0 w-full h-screen pointer-events-none z-0 overflow-hidden ${isHeroVideoActive ? "block" : "hidden"}`}
       >
-        <motion.video 
-          ref={heroVideoRef}
-          autoPlay
-          muted 
-          loop 
-          playsInline
-          preload="auto"
-          src={heroVideos[0]}
-          style={{ 
-            y: videoY,
-            scale: videoScale,
-            opacity: videoOpacity
-          }}
-          className="absolute inset-0 w-full h-full object-cover"
-        />
+        <AnimatePresence mode="sync">
+          <motion.video 
+            key={heroVideos[heroVideoIndex]}
+            ref={heroVideoRef}
+            autoPlay
+            muted 
+            playsInline
+            preload="auto"
+            src={heroVideos[heroVideoIndex]}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.2, ease: "easeInOut" }}
+            style={{ 
+              y: videoY,
+              scale: videoScale,
+            }}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        </AnimatePresence>
         {/* Soft overlay gradient ensuring readability without masking brightness */}
         <div className="absolute inset-0 bg-gradient-to-b from-background/25 via-background/45 to-background z-10"></div>
       </motion.div>
