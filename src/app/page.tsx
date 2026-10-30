@@ -54,7 +54,16 @@ export default function Home() {
     "/Projects/raibareli.mp4"
   ];
 
+  const [isLoading, setIsLoading] = useState(true);
   const heroVideoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    // Dismiss loading indicator smoothly once client initializes
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 900);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (heroVideoRef.current) {
@@ -185,6 +194,25 @@ export default function Home() {
                   </div>
                 </div>
               </motion.h1>
+
+              {/* Prominent Loading text that displays while the page initializes */}
+              <AnimatePresence>
+                {isLoading && (
+                  <motion.div
+                    initial={{ opacity: 1, y: 0 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6, transition: { duration: 0.4 } }}
+                    className="text-accent tracking-[0.35em] font-semibold text-xs sm:text-sm mt-1 sm:mt-2 uppercase flex items-center justify-center gap-2"
+                  >
+                    <motion.span
+                      animate={{ opacity: [0.35, 1, 0.35] }}
+                      transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                      Loading...
+                    </motion.span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Premium Hero Subtitle & CTA - Pinned cleanly at bottom across all screens */}
