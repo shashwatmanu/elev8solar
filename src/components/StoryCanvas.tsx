@@ -29,7 +29,7 @@ function SolarFarmDirector() {
           const x = c * 6.7; 
           const z = r * 15;
           
-          dummy.position.set(x, 0, z);
+          dummy.position.set(x, 2.0, z);
           dummy.rotation.set(0, 0, 0); 
           dummy.rotation.x = Math.PI / 6; 
           dummy.updateMatrix();
@@ -66,14 +66,14 @@ function SolarFarmDirector() {
         
         const dist = Math.sqrt(x * x + y * y);
         
-        // Keep the immediate solar farm area perfectly flat
-        if (dist > 150) {
+        // Keep the solar farm array area (which spans 400m+ in x and z) completely flat
+        if (dist > 350) {
           // Generate massive rolling hills using stacked low-frequency sine waves
           const hill1 = Math.sin(x * 0.002) * Math.cos(y * 0.002) * 40;
           const hill2 = Math.sin(x * 0.005) * Math.cos(y * 0.005) * 15;
           
           // Gradually introduce the hills to avoid abrupt clipping with the flat area
-          const blend = Math.min(1, (dist - 150) / 200);
+          const blend = Math.min(1, (dist - 350) / 250);
           
           // Horizon drop-off (simulating planetary curvature at extreme distances)
           const curvature = -Math.pow(dist * 0.0005, 2) * 100; 
@@ -95,28 +95,28 @@ function SolarFarmDirector() {
     
     // The camera constantly glides in a wide, sweeping arc
     const targetX = Math.sin(time * speed) * orbitRadius;
-    const targetY = 10.0 + Math.sin(time * speed * 0.5) * 5.0; // Gentle vertical drone movement
-    const targetZ = 40 + Math.cos(time * speed) * orbitRadius;
+    const targetY = 12.0 + Math.sin(time * speed * 0.5) * 4.0; // Gentle vertical drone movement
+    const targetZ = 45 + Math.cos(time * speed) * orbitRadius;
 
     camera.position.x = THREE.MathUtils.lerp(camera.position.x, targetX, 0.01);
     camera.position.y = THREE.MathUtils.lerp(camera.position.y, targetY, 0.01);
     camera.position.z = THREE.MathUtils.lerp(camera.position.z, targetZ, 0.01);
 
     // Cinematic fixed center focus without mouse tracking
-    camera.lookAt(0, 0, 0);
+    camera.lookAt(0, 2, 0);
 
     if (groupRef.current) {
-      groupRef.current.position.y = -1.9;
+      groupRef.current.position.y = 0;
       // Gentle cinematic breathing motion instead of cursor tilt
-      groupRef.current.rotation.x = Math.sin(time * 0.2) * 0.005;
-      groupRef.current.rotation.y = Math.cos(time * 0.15) * 0.005;
+      groupRef.current.rotation.x = Math.sin(time * 0.2) * 0.003;
+      groupRef.current.rotation.y = Math.cos(time * 0.15) * 0.003;
     }
   });
 
   return (
-    <group ref={groupRef} position={[0, -1, 0]}>
+    <group ref={groupRef} position={[0, 0, 0]}>
       {/* Physical Earth Ground */}
-      <mesh ref={groundRef} position={[0, -2.1, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+      <mesh ref={groundRef} position={[0, -0.5, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <planeGeometry args={[20000, 20000, 60, 60]} />
         <meshStandardMaterial 
           color="#152018" 
