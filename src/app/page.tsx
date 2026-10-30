@@ -39,11 +39,6 @@ export default function Home() {
   const heroY = useTransform(scrollY, [0, 800], [0, 300]);
   const heroOpacity = useTransform(scrollY, [0, 600], [1, 0]);
 
-  // Declare all motion transforms at top-level to obey React Rules of Hooks
-  const videoY = useTransform(scrollY, [0, 800], [0, 180]);
-  const videoScale = useTransform(scrollY, [0, 800], [1, 1.1]);
-  const videoOpacity = useTransform(scrollY, [300, 750], [0.65, 0]);
-
   const [bill, setBill] = useState("");
   const [calcResult, setCalcResult] = useState<null | number>(null);
 
@@ -124,44 +119,39 @@ export default function Home() {
 
   return (
     <div className="relative w-full">
-      
-      {/* Cinematic Hero Video Background:
-          Uses persistent background without mobile layout reflow */}
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: !isLoading ? 1 : 0 }}
-        transition={{ duration: 1.2, ease: "easeInOut" }}
-        className="fixed top-0 left-0 w-full h-[100svh] pointer-events-none z-0 overflow-hidden"
-      >
-        <AnimatePresence mode="sync">
-          <motion.video 
-            key={heroVideos[heroVideoIndex]}
-            ref={heroVideoRef}
-            autoPlay
-            muted 
-            playsInline
-            preload="auto"
-            src={heroVideos[heroVideoIndex]}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1.2, ease: "easeInOut" }}
-            style={{ 
-              y: videoY,
-              scale: videoScale,
-            }}
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-        </AnimatePresence>
-        {/* Soft overlay gradient ensuring readability without masking brightness */}
-        <div className="absolute inset-0 bg-gradient-to-b from-background/25 via-background/45 to-background z-10"></div>
-      </motion.div>
-
       <main className="relative z-10 w-full text-white overflow-hidden pb-0 bg-transparent">
         <ElectricityBackground />
         
-        {/* 1. HERO SECTION */}
-        <section className="relative w-full h-[100svh] min-h-[600px] flex flex-col items-center justify-between pt-20 sm:pt-28 md:pt-32 pb-8 sm:pb-12 px-4 sm:px-6">
+        {/* 1. HERO SECTION (Video is strictly scoped inside here) */}
+        <section className="relative w-full h-[100svh] min-h-[600px] flex flex-col items-center justify-between pt-20 sm:pt-28 md:pt-32 pb-8 sm:pb-12 px-4 sm:px-6 overflow-hidden">
+          
+          {/* Hero Video Background - Scoped exclusively to Hero */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: !isLoading ? 1 : 0 }}
+            transition={{ duration: 1.2, ease: "easeInOut" }}
+            className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-hidden"
+          >
+            <AnimatePresence mode="sync">
+              <motion.video 
+                key={heroVideos[heroVideoIndex]}
+                ref={heroVideoRef}
+                autoPlay
+                muted 
+                playsInline
+                preload="auto"
+                src={heroVideos[heroVideoIndex]}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 1.2, ease: "easeInOut" }}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            </AnimatePresence>
+            {/* Soft overlay gradient ensuring readability without masking brightness */}
+            <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/50 to-background z-10"></div>
+          </motion.div>
+
           <motion.div 
             style={{ y: heroY, opacity: heroOpacity }}
             className="relative z-10 max-w-7xl w-full h-full mx-auto text-center flex flex-col items-center justify-between"
@@ -310,7 +300,7 @@ export default function Home() {
         </section>
 
         {/* 2. ABOUT US */}
-        <section className="relative w-full min-h-screen flex flex-col justify-center bg-gradient-to-b from-transparent via-[#050505]/95 to-[#050505] pt-16 sm:pt-24 md:pt-28 mt-0">
+        <section className="relative w-full min-h-screen flex flex-col justify-center bg-[#050505] pt-16 sm:pt-24 md:pt-28 mt-0 border-t border-white/5">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 w-full">
             <motion.div
               initial={{ opacity: 0, y: 40 }}
