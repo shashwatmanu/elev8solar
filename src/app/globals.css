@@ -18,9 +18,6 @@ html.scroll-locked, body.scroll-locked {
   touch-action: none !important;
   -webkit-overflow-scrolling: auto !important;
   overscroll-behavior: none !important;
-  position: fixed !important;
-  width: 100% !important;
-  height: 100% !important;
 }
 
 ::-webkit-scrollbar {

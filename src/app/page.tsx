@@ -279,7 +279,17 @@ export default function Home() {
                 className="flex flex-row items-center justify-center gap-3 sm:gap-6 w-full lg:w-auto"
               >
                 <MagneticButton>
-                  <a href="#contact" className="group relative flex-1 sm:flex-initial px-6 sm:px-8 py-3.5 sm:py-4 rounded-full bg-white text-black font-bold tracking-[0.15em] sm:tracking-[0.2em] uppercase overflow-hidden hover:scale-105 active:scale-95 transition-transform duration-500 block text-xs text-center shadow-lg">
+                  <a 
+                    href="#contact" 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const target = document.getElementById("contact");
+                      if (target) {
+                        target.scrollIntoView({ behavior: "smooth" });
+                      }
+                    }}
+                    className={`group relative flex-1 sm:flex-initial px-6 sm:px-8 py-3.5 sm:py-4 rounded-full bg-white text-black font-bold tracking-[0.15em] sm:tracking-[0.2em] uppercase overflow-hidden hover:scale-105 active:scale-95 transition-transform duration-500 block text-xs text-center shadow-lg ${isLoading ? 'pointer-events-none' : ''}`}
+                  >
                     <div className="absolute inset-0 bg-accent translate-y-[100%] group-hover:translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]" />
                     <span className="relative z-10 flex items-center justify-center gap-2 sm:gap-3">
                       Get Quote <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
