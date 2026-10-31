@@ -76,18 +76,27 @@ export default function Home() {
     if (isLoading) {
       document.documentElement.classList.add("scroll-locked");
       document.body.classList.add("scroll-locked");
-      const preventTouch = (e: TouchEvent) => {
-        e.preventDefault();
+      const preventGesture = (e: Event) => {
+        // Prevent all touch moves and pointer scrolls while loading
+        if (e.cancelable) {
+          e.preventDefault();
+        }
       };
-      window.addEventListener("touchmove", preventTouch, { passive: false });
+      window.addEventListener("touchmove", preventGesture, { passive: false });
+      window.addEventListener("wheel", preventGesture, { passive: false });
       return () => {
         document.documentElement.classList.remove("scroll-locked");
         document.body.classList.remove("scroll-locked");
-        window.removeEventListener("touchmove", preventTouch);
+        window.removeEventListener("touchmove", preventGesture);
+        window.removeEventListener("wheel", preventGesture);
       };
     } else {
       document.documentElement.classList.remove("scroll-locked");
       document.body.classList.remove("scroll-locked");
+      // Double check window is anchored to top upon loading release
+      if (typeof window !== "undefined") {
+        window.scrollTo(0, 0);
+      }
     }
   }, [isLoading]);
 
